@@ -92,9 +92,15 @@ class SftpSync
       sftp_session.remove!(remote_path)
     end
   end
-  
+
+  # Uploades the file from the local path to the remote path.
+  #
+  # sftp_session:: The sftp_session used to upload the file
+  # remote_path:: The destination of the uploaded file
+  # local_path:: The location of the file to upload
   def push_file(sftp_session, remote_path, local_path)
 
+    sftp_session.upload(local_path, remote_path)
   end
 
   # Downloads the file from the remote path to the provided local
@@ -107,9 +113,84 @@ class SftpSync
 
     sftp_session.download(remote_path, local_path)
   end
-  
+
+  # Uploads all of the files and directories from the local path to
+  # the remote path. If the "delete" flag is set, files in the remote
+  # location that are not present in the local location will be
+  # removed.
+  #
+  # sftp_session:: The sftp_session used to upload the files
+  # remote_path:: The remote path that will be the destination of the
+  # uploaded files
+  # local_path:: The local path of files to upload
   def push_dir(sftp_session, remote_path, local_path, delete)
 
+    # make sure the remote path exists
+    begin
+
+      sftp_session.dir.entries(remote_path)
+    rescue
+
+      # we block on the directory creation because we'll need it as
+      # soon as this call returns
+      sftp_session.mkdir!(remote_path)
+    end
+
+    # move our local file pointer to the local path
+    FileUtils.cd(local_path)
+
+    # get a list of our remote files
+    remote_entries = sftp_session.dir.glob(remote_path, "*")
+
+    # a list of items in this directory that we have handled
+    handled_remote_entry_paths = Array.new
+
+    # enumerate the local directory
+    Dir.glob("*").each do |local_entry|
+
+      # don't sync the link to the local or parent directory
+      if(local_entry != "." && local_entry != "..")
+
+        # compute the local and remote paths
+        local_entry_path = local_path + "/" + local_entry
+        remote_entry_path = remote_path + "/" + local_entry
+
+        if File.directory?(local_entry_path)
+
+          push_dir(sftp_session, remote_entry_path, local_entry_path, delete)
+        else
+
+          push_file(sftp_session, remote_entry_path, local_entry_path)
+        end
+
+        # add the remote path to our list of handled paths
+        handled_remote_entry_paths << remote_entry_path
+      end
+    end
+
+    # handle the deletion of stale remote files and directories
+    if delete
+
+      # loop through the remote entries
+      remote_entries.each do |remote_entry|
+
+        # compute the remote path
+        remote_entry_path = remote_path + "/" + remote_entry.name
+
+        # check to see if we have handled this path
+        if !handled_remote_entry_paths.include?(remote_entry_path)
+
+          # this entry wasn't on the local side, delete it
+          if remote_entry.directory?
+
+            remove_dir(sftp_session, remote_entry_path, nil)
+          else
+
+            remove_file(sftp_session, remote_entry_path, nil)
+          end
+        end
+      end
+    end
   end
 
   # Downloads all of the files and directories from the remote path to
