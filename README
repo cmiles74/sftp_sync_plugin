@@ -1,0 +1,33 @@
+SFTP Sync Plugin
+================
+
+This plugin provides a very simple mechanism for synchronizing a local
+folder with an SFTP location. It uses a very simple algorithm that
+compares modification dates.
+
+Dependencies
+============
+
+This plugin requires the Net::SFTP and the Net::SSH module. You can
+download a copy from the project's respective websites.
+
+  http://net-ssh.rubyforge.org/sftp/v2/api/
+
+  http://net-ssh.rubyforge.org/ssh/v2/api
+
+This plugin was tested with version Net::SFTP 2.0.4 and Net::SSH 2.0.17
+
+Example
+=======
+
+Example goes here.
+
+
+Contact
+=======
+
+If you have any questions or comments, please contact me directly.
+
+  Christopher Miles
+  twitch@nervestaple.com
+
