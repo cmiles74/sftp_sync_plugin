@@ -111,7 +111,15 @@ class SftpSync
   def push_dir(sftp_session, remote_path, local_path, delete)
 
   end
-  
+
+  # Downloads all of the files and directories from the remote path to
+  # the local path. If the "delete" flag is set, files in the local
+  # location that are not present in the remote location will be
+  # removed.
+  #
+  # sftp_session:: The sftp_session used to download files
+  # remote_path:: The remote path to download files from
+  # local_path:: The destination of the downloaded files
   def pull_dir(sftp_session, remote_path, local_path, delete)
     
     # make sure the local path exists
