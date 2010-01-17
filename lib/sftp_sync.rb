@@ -8,6 +8,7 @@ class SftpSync
   require 'net/ssh'
   require 'net/sftp'
   require 'ftools'
+  require 'yaml'
   require 'log4r'
   include Log4r
 
@@ -15,6 +16,9 @@ class SftpSync
   attr_accessor :local_directory
   attr_accessor :remote_host, :remote_directory
   attr_accessor :remote_username, :remote_password
+
+  # the name of the file where we store our sync data
+  SYNC_DATA_FILE = ".sftp_sync_data.yaml"
 
   # Creates a new SFTPSync object.
   #
@@ -98,9 +102,33 @@ class SftpSync
   # sftp_session:: The sftp_session used to upload the file
   # remote_path:: The destination of the uploaded file
   # local_path:: The location of the file to upload
-  def push_file(sftp_session, remote_path, local_path)
+  # sync_data:: Hash used to track the modification time of pushed files
+  def push_file(sftp_session, remote_path, local_path, sync_data)
 
-    sftp_session.upload(local_path, remote_path)
+    # get the modification time of the local file
+    local_mtime = File.mtime(local_path)
+
+    # get the remote modification time
+    begin
+
+      remote_mtime = Time.at(sftp_session.file.open(remote_path).stat().mtime)
+    rescue
+
+      remote_mtime = nil
+    end
+
+    # save he modification time of the local file
+    sync_data["push"][remote_path] = local_mtime
+
+    if !remote_mtime || (remote_mtime <=> local_mtime) < 0
+
+      # push the file
+      sftp_session.upload!(local_path, remote_path)
+      @log.debug("Pushed file #{local_path}")
+    else
+
+      @log.debug("Skipped file #{local_path}")
+    end
   end
 
   # Downloads the file from the remote path to the provided local
@@ -109,9 +137,33 @@ class SftpSync
   # sftp_session:: The sftp_session used to download the file
   # remote_path:: The location of the file to download
   # local_path:: The destination of the downloaded file
-  def pull_file(sftp_session, remote_path, local_path)
+  # sync_data:: Hash used to track the modification time of pulled files
+  def pull_file(sftp_session, remote_path, local_path, sync_data)
 
-    sftp_session.download(remote_path, local_path)
+    # get the remote modification time
+    remote_mtime = Time.at(sftp_session.file.open(remote_path).stat().mtime)
+
+    # get the local modification time
+    if File.exists?(local_path)
+
+      local_mtime = File.mtime(local_path)
+    else
+
+      local_mtime = nil
+    end
+    
+    # save the modification time of the remote file
+    sync_data["pull"][remote_path] = remote_mtime
+
+    if !local_mtime || (local_mtime <=> remote_mtime) < 0
+
+      # pull the file
+      sftp_session.download!(remote_path, local_path)
+      @log.debug("Pulled file #{remote_path}")
+    else
+
+      @log.debug("Skipped file #{remote_path}")
+    end
   end
 
   # Uploads all of the files and directories from the local path to
@@ -123,8 +175,11 @@ class SftpSync
   # remote_path:: The remote path that will be the destination of the
   # uploaded files
   # local_path:: The local path of files to upload
-  def push_dir(sftp_session, remote_path, local_path, delete)
+  # sync_data:: Hash used to track modification time of pushed files
+  def push_dir(sftp_session, remote_path, local_path, delete, sync_data)
 
+    @log.debug("Pushing dir #{local_path}")
+    
     # make sure the remote path exists
     begin
 
@@ -157,10 +212,12 @@ class SftpSync
 
         if File.directory?(local_entry_path)
 
-          push_dir(sftp_session, remote_entry_path, local_entry_path, delete)
+          push_dir(sftp_session, remote_entry_path, local_entry_path, delete,
+                   sync_data)
         else
 
-          push_file(sftp_session, remote_entry_path, local_entry_path)
+          push_file(sftp_session, remote_entry_path, local_entry_path,
+                    sync_data)
         end
 
         # add the remote path to our list of handled paths
@@ -191,6 +248,8 @@ class SftpSync
         end
       end
     end
+
+    @log.debug("Pushed dir #{local_path}")
   end
 
   # Downloads all of the files and directories from the remote path to
@@ -201,7 +260,10 @@ class SftpSync
   # sftp_session:: The sftp_session used to download files
   # remote_path:: The remote path to download files from
   # local_path:: The destination of the downloaded files
-  def pull_dir(sftp_session, remote_path, local_path, delete)
+  # sync_data:: Hash used to track modification time of pulled files
+  def pull_dir(sftp_session, remote_path, local_path, delete, sync_data)
+
+    @log.debug("Pulling dir #{remote_path}")
     
     # make sure the local path exists
     if !File.exists?(local_path)
@@ -221,8 +283,10 @@ class SftpSync
     # enumerate the remote directory
     sftp_session.dir.foreach(remote_path) do |remote_entry|
 
-      # don't sync the link to the local or parent directory
-      if(remote_entry.name != "." && remote_entry.name != "..")
+      # don't sync the link to the local or parent directory or our
+      # sync data
+      if(remote_entry.name != "." && remote_entry.name != ".." &&
+         remote_entry.name != SYNC_DATA_FILE)
 
         # compute the local path and remote paths
         local_entry_path = local_path + "/" + remote_entry.name
@@ -230,10 +294,12 @@ class SftpSync
 
         if remote_entry.directory?
 
-          pull_dir(sftp_session, remote_entry_path, local_entry_path, delete)
+          pull_dir(sftp_session, remote_entry_path, local_entry_path, delete,
+                   sync_data)
         else
 
-          pull_file(sftp_session, remote_entry_path, local_entry_path)
+          pull_file(sftp_session, remote_entry_path, local_entry_path,
+                    sync_data)
         end
 
         # add the local path to our list of handled paths
@@ -264,6 +330,58 @@ class SftpSync
         end
       end
     end
+
+    @log.debug("Pulled dir #{remote_path}")
+  end
+
+  # Returns the path to the file used for storing sync data. Note taht
+  # this path should be a directory, not a file
+  #
+  # local_path:: Path to the directory where sync data will be or has
+  # been stored.
+  def get_sync_data_file(local_path)
+
+    # location of our sync data
+    sync_data_path = local_path + "/" + SYNC_DATA_FILE
+
+    return sync_data_path
+  end
+  
+  # Loads in our sync data from the provided path and returns that
+  # data as a Hash. Note that this path should be a directory, not a
+  # file.
+  #
+  # local_path:: Path to directory containing sync data
+  def load_sync_data(local_path)
+
+    # check to see if we have sync data
+    if File.exists?(get_sync_data_file(local_path))
+
+      # load in our sync data
+      sync_data = YAML::load_file(get_sync_data_file(local_path))
+    else
+
+      # start with new sync data
+      sync_data = Hash.new
+      sync_data["push"] = Hash.new
+      sync_data["pull"] = Hash.new
+    end
+
+    return sync_data
+  end
+
+  # Saves our sync data to the provided path. Note that this path
+  # should be a directory, not a file.
+  #
+  # local_path:: Path to the directory where sync data will be stored
+  # sync_data:: The sync data to save
+  def save_sync_data(local_path, sync_data)
+
+    # save our sync data
+    File.open(get_sync_data_file(local_path), 'w') do |out|
+
+      YAML::dump(sync_data, out)
+    end
   end
 
   # Synchronizes the remote and local locations by downloading files
@@ -277,12 +395,18 @@ class SftpSync
   # present in the remote location should be deleted
   def pull(remote_path, local_path, delete)
 
+    # load our sync data
+    sync_data = load_sync_data(local_path)
+
     Net::SFTP.start(@remote_host,
                   @remote_username,
                   :password => @remote_password) do |sftp|
 
-      pull_dir(sftp, remote_path, local_path, delete)
+      pull_dir(sftp, remote_path, local_path, delete, sync_data)
     end
+
+    # save our sync data
+    save_sync_data(local_path, sync_data)
   end
 
   # Synchronizes the remote and local locations by uploading files
@@ -297,11 +421,17 @@ class SftpSync
   # the local location should be deleted
   def push(remote_path, local_path, delete)
 
+    # load our sync data
+    sync_data = load_sync_data(local_path)
+    
     Net::SFTP.start(@remote_host,
                   @remote_username,
                   :password => @remote_password) do |sftp|
 
-      push_dir(sftp, remote_path, local_path, delete)
+      push_dir(sftp, remote_path, local_path, delete, sync_data)
     end
+
+    # save our sync data
+    save_sync_data(local_path, sync_data)
   end
 end
