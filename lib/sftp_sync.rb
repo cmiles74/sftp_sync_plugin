@@ -117,14 +117,17 @@ class SftpSync
       remote_mtime = nil
     end
 
-    # save he modification time of the local file
-    sync_data["push"][remote_path] = local_mtime
-
     if !remote_mtime || (remote_mtime <=> local_mtime) < 0
 
       # push the file
       sftp_session.upload!(local_path, remote_path)
       @log.debug("Pushed file #{local_path}")
+
+      # get the new modification time of the remote file
+      remote_mtime = Time.at(sftp_session.file.open(remote_path).stat().mtime)
+      
+      # save the modification time of the local file
+      sync_data["push"][remote_path] = [local_mtime, remote_mtime]
     else
 
       @log.debug("Skipped file #{local_path}")
@@ -151,15 +154,32 @@ class SftpSync
 
       local_mtime = nil
     end
-    
-    # save the modification time of the remote file
-    sync_data["pull"][remote_path] = remote_mtime
 
-    if !local_mtime || (local_mtime <=> remote_mtime) < 0
+    # get our last pull times
+    pull_last = sync_data["pull"][remote_path]
+
+    if pull_last
+      
+      pull_last_local = pull_last[0]
+      pull_last_remote = pull_last[1]
+    else
+
+      pull_last_local = nil
+      pull_last_remote = nil
+    end
+    
+    if !local_mtime || !pull_last_remote ||
+        (pull_last_remote <=> remote_mtime) < 0
 
       # pull the file
       sftp_session.download!(remote_path, local_path)
       @log.debug("Pulled file #{remote_path}")
+
+      # get the new modification time of the remote file
+      local_mtime = File.mtime(local_path)
+      
+      # save the modification time of the remote file
+      sync_data["pull"][remote_path] = [local_mtime, remote_mtime]
     else
 
       @log.debug("Skipped file #{remote_path}")
