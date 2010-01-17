@@ -97,6 +97,48 @@ class SftpSync
     end
   end
 
+  # Returns a Hash with the last push and pull times for the provided
+  # path. This Hash will have the following keys...
+  #
+  # - push_last_local mtime of the local file after the last push
+  # - push_last_remote mtime of the remote file after the last push
+  # - pull_last_local mtime of the local files after the last pull
+  # - pull_last_remote mtime of the remote file after the last pull
+  #
+  # sync_data:: The Hash of sync data from which times will be fetched
+  # remote_path:: The path for which to fetch times
+  def get_last_sync_times(sync_data, remote_path)
+
+    # get our last push and pull times
+    push_last = sync_data["push"][remote_path]
+    pull_last = sync_data["pull"][remote_path]
+
+    if push_last
+
+      push_last_local = push_last[0]
+      push_last_remote = push_last[1]
+    else
+
+      push_last_local = nil
+      push_last_remote = nil
+    end
+
+    if pull_last
+      
+      pull_last_local = pull_last[0]
+      pull_last_remote = pull_last[1]
+    else
+
+      pull_last_local = nil
+      pull_last_remote = nil
+    end
+
+    return Hash["push_last_local" => push_last_local,
+                "push_last_remote" => push_last_remote,
+                "pull_last_local" => pull_last_local,
+                "pull_last_remote" => pull_last_remote]
+  end
+  
   # Uploades the file from the local path to the remote path.
   #
   # sftp_session:: The sftp_session used to upload the file
@@ -117,7 +159,11 @@ class SftpSync
       remote_mtime = nil
     end
 
-    if !remote_mtime || (remote_mtime <=> local_mtime) < 0
+    # get our last sync times
+    last_sync = get_last_sync_times(sync_data, remote_path)
+    
+    if !remote_mtime || !last_sync["push_last_remote"] ||
+        (last_sync["push_last_remote"] <=> remote_mtime) < 0
 
       # push the file
       sftp_session.upload!(local_path, remote_path)
@@ -155,21 +201,11 @@ class SftpSync
       local_mtime = nil
     end
 
-    # get our last pull times
-    pull_last = sync_data["pull"][remote_path]
+    # get our last sync times
+    last_sync = get_last_sync_times(sync_data, remote_path)
 
-    if pull_last
-      
-      pull_last_local = pull_last[0]
-      pull_last_remote = pull_last[1]
-    else
-
-      pull_last_local = nil
-      pull_last_remote = nil
-    end
-    
-    if !local_mtime || !pull_last_remote ||
-        (pull_last_remote <=> remote_mtime) < 0
+    if !local_mtime || !last_sync["pull_last_remote"] ||
+        (last_sync["pull_last_remote"] <=> remote_mtime) < 0
 
       # pull the file
       sftp_session.download!(remote_path, local_path)
