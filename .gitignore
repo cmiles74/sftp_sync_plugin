@@ -1,0 +1,12 @@
+syntax: glob
+*.orig
+*.rej
+*~
+*.o
+tests/*.err
+.DS_Store
+log/*
+tmp/*
+\#*
+.\#*
+

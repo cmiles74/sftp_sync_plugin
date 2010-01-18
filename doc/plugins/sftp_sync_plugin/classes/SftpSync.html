@@ -1,0 +1,1092 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Class: SftpSync</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+    <div id="classHeader">
+        <table class="header-table">
+        <tr class="top-aligned-row">
+          <td><strong>Class</strong></td>
+          <td class="class-name-in-header">SftpSync</td>
+        </tr>
+        <tr class="top-aligned-row">
+            <td><strong>In:</strong></td>
+            <td>
+                <a href="../files/vendor/plugins/sftp_sync_plugin/lib/sftp_sync_rb.html">
+                vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb
+                </a>
+        <br />
+            </td>
+        </tr>
+
+        <tr class="top-aligned-row">
+            <td><strong>Parent:</strong></td>
+            <td>
+                Object
+            </td>
+        </tr>
+        </table>
+    </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+    <div id="description">
+      <p>
+Provides an object for synchronizing a local directory with a remote SFTP
+location.
+</p>
+<table>
+<tr><td valign="top">Author:</td><td>Christopher M. Miles
+
+</td></tr>
+</table>
+<p>
+Nervestaple Development
+</p>
+<p>
+version 1.0, 1/17/2010
+</p>
+
+    </div>
+
+
+   </div>
+
+    <div id="method-list">
+      <h3 class="section-bar">Methods</h3>
+
+      <div class="name-list">
+      <a href="#M000004">get_last_sync_times</a>&nbsp;&nbsp;
+      <a href="#M000009">get_sync_data_file</a>&nbsp;&nbsp;
+      <a href="#M000010">load_sync_data</a>&nbsp;&nbsp;
+      <a href="#M000001">new</a>&nbsp;&nbsp;
+      <a href="#M000012">pull</a>&nbsp;&nbsp;
+      <a href="#M000008">pull_dir</a>&nbsp;&nbsp;
+      <a href="#M000006">pull_file</a>&nbsp;&nbsp;
+      <a href="#M000013">push</a>&nbsp;&nbsp;
+      <a href="#M000007">push_dir</a>&nbsp;&nbsp;
+      <a href="#M000005">push_file</a>&nbsp;&nbsp;
+      <a href="#M000002">remove_dir</a>&nbsp;&nbsp;
+      <a href="#M000003">remove_file</a>&nbsp;&nbsp;
+      <a href="#M000011">save_sync_data</a>&nbsp;&nbsp;
+      </div>
+    </div>
+
+  </div>
+
+
+    <!-- if includes -->
+    <div id="includes">
+      <h3 class="section-bar">Included Modules</h3>
+
+      <div id="includes-list">
+        <span class="include-name">Log4r</span>
+      </div>
+    </div>
+
+    <div id="section">
+
+
+    <div id="constants-list">
+      <h3 class="section-bar">Constants</h3>
+
+      <div class="name-list">
+        <table summary="Constants">
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">SYNC_DATA_FILE</td>
+          <td>=</td>
+          <td class="context-item-value">&quot;.sftp_sync_data.yaml&quot;</td>
+          <td width="3em">&nbsp;</td>
+          <td class="context-item-desc">
+the name of the file where we store our sync data
+
+</td>
+        </tr>
+        </table>
+      </div>
+    </div>
+
+
+
+    <div id="attribute-list">
+      <h3 class="section-bar">Attributes</h3>
+
+      <div class="name-list">
+        <table>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">local_directory</td>
+          <td class="context-item-value">&nbsp;[RW]&nbsp;</td>
+          <td class="context-item-desc">
+the local directory to sync
+
+</td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">remote_directory</td>
+          <td class="context-item-value">&nbsp;[RW]&nbsp;</td>
+          <td class="context-item-desc">
+the remote directory to sync
+
+</td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">remote_host</td>
+          <td class="context-item-value">&nbsp;[RW]&nbsp;</td>
+          <td class="context-item-desc">
+the remote host
+
+</td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">remote_password</td>
+          <td class="context-item-value">&nbsp;[RW]&nbsp;</td>
+          <td class="context-item-desc">
+the password for the remote host
+
+</td>
+        </tr>
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">remote_username</td>
+          <td class="context-item-value">&nbsp;[RW]&nbsp;</td>
+          <td class="context-item-desc">
+the username for the remote host
+
+</td>
+        </tr>
+        </table>
+      </div>
+    </div>
+      
+
+
+    <!-- if method_list -->
+    <div id="methods">
+      <h3 class="section-bar">Public Class methods</h3>
+
+      <div id="method-M000001" class="method-detail">
+        <a name="M000001"></a>
+
+        <div class="method-heading">
+          <a href="#M000001" class="method-signature">
+          <span class="method-name">new</span><span class="method-args">(remote_host, remote_username, remote_password)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Creates a <a href="SftpSync.html#M000001">new</a> SFTPSync object.
+</p>
+<table>
+<tr><td valign="top">remote_host:</td><td>The remote server
+
+</td></tr>
+<tr><td valign="top">remote_username:</td><td>The username on the remote host
+
+</td></tr>
+<tr><td valign="top">remote_password:</td><td>The password on the remote host
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000001-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000001-source">
+<pre>
+    <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 44</span>
+44:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">remote_host</span>, <span class="ruby-identifier">remote_username</span>, <span class="ruby-identifier">remote_password</span>)
+45: 
+46:     <span class="ruby-comment cmt"># setup our console logger</span>
+47:     <span class="ruby-identifier">format</span> = <span class="ruby-constant">PatternFormatter</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">:pattern</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value str">&quot;%l:\t %m&quot;</span>)
+48:     <span class="ruby-ivar">@log</span> = <span class="ruby-constant">Log4r</span><span class="ruby-operator">::</span><span class="ruby-constant">Logger</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">'SftpSync'</span>)
+49:     <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">add</span>(<span class="ruby-constant">Log4r</span><span class="ruby-operator">::</span><span class="ruby-constant">StdoutOutputter</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">'console'</span>, <span class="ruby-identifier">:formatter=</span><span class="ruby-operator">&gt;</span><span class="ruby-identifier">format</span>))
+50:     
+51:     <span class="ruby-comment cmt"># save all of our variables</span>
+52:     <span class="ruby-ivar">@remote_host</span> = <span class="ruby-identifier">remote_host</span>
+53:     <span class="ruby-ivar">@remote_username</span> = <span class="ruby-identifier">remote_username</span>
+54:     <span class="ruby-ivar">@remote_password</span> = <span class="ruby-identifier">remote_password</span>
+55:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-bar">Public Instance methods</h3>
+
+      <div id="method-M000004" class="method-detail">
+        <a name="M000004"></a>
+
+        <div class="method-heading">
+          <a href="#M000004" class="method-signature">
+          <span class="method-name">get_last_sync_times</span><span class="method-args">(sync_data, remote_path)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Returns a Hash with the last <a href="SftpSync.html#M000013">push</a> and
+<a href="SftpSync.html#M000012">pull</a> times for the provided path. This
+Hash will have the following keys&#8230;
+</p>
+<table>
+<tr><td valign="top">push_last_local:</td><td>mtime of the local file after the last <a
+href="SftpSync.html#M000013">push</a>
+
+</td></tr>
+<tr><td valign="top">push_last_remote:</td><td>mtime of the remote file after the last <a
+href="SftpSync.html#M000013">push</a>
+
+</td></tr>
+<tr><td valign="top">pull_last_local:</td><td>mtime of the local files after the last <a
+href="SftpSync.html#M000012">pull</a>
+
+</td></tr>
+<tr><td valign="top">pull_last_remote:</td><td>mtime of the remote file after the last <a
+href="SftpSync.html#M000012">pull</a>
+
+</td></tr>
+<tr><td valign="top">sync_data:</td><td>The Hash of sync data from which times will be fetched
+
+</td></tr>
+<tr><td valign="top">remote_path:</td><td>The path for which to fetch times
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000004-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000004-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 126</span>
+126:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_last_sync_times</span>(<span class="ruby-identifier">sync_data</span>, <span class="ruby-identifier">remote_path</span>)
+127: 
+128:     <span class="ruby-comment cmt"># get our last push and pull times</span>
+129:     <span class="ruby-identifier">push_last</span> = <span class="ruby-identifier">sync_data</span>[<span class="ruby-value str">&quot;push&quot;</span>][<span class="ruby-identifier">remote_path</span>]
+130:     <span class="ruby-identifier">pull_last</span> = <span class="ruby-identifier">sync_data</span>[<span class="ruby-value str">&quot;pull&quot;</span>][<span class="ruby-identifier">remote_path</span>]
+131: 
+132:     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">push_last</span>
+133: 
+134:       <span class="ruby-identifier">push_last_local</span> = <span class="ruby-identifier">push_last</span>[<span class="ruby-value">0</span>]
+135:       <span class="ruby-identifier">push_last_remote</span> = <span class="ruby-identifier">push_last</span>[<span class="ruby-value">1</span>]
+136:     <span class="ruby-keyword kw">else</span>
+137: 
+138:       <span class="ruby-identifier">push_last_local</span> = <span class="ruby-keyword kw">nil</span>
+139:       <span class="ruby-identifier">push_last_remote</span> = <span class="ruby-keyword kw">nil</span>
+140:     <span class="ruby-keyword kw">end</span>
+141: 
+142:     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">pull_last</span>
+143:       
+144:       <span class="ruby-identifier">pull_last_local</span> = <span class="ruby-identifier">pull_last</span>[<span class="ruby-value">0</span>]
+145:       <span class="ruby-identifier">pull_last_remote</span> = <span class="ruby-identifier">pull_last</span>[<span class="ruby-value">1</span>]
+146:     <span class="ruby-keyword kw">else</span>
+147: 
+148:       <span class="ruby-identifier">pull_last_local</span> = <span class="ruby-keyword kw">nil</span>
+149:       <span class="ruby-identifier">pull_last_remote</span> = <span class="ruby-keyword kw">nil</span>
+150:     <span class="ruby-keyword kw">end</span>
+151: 
+152:     <span class="ruby-keyword kw">return</span> <span class="ruby-constant">Hash</span>[<span class="ruby-value str">&quot;push_last_local&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">push_last_local</span>,
+153:                 <span class="ruby-value str">&quot;push_last_remote&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">push_last_remote</span>,
+154:                 <span class="ruby-value str">&quot;pull_last_local&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">pull_last_local</span>,
+155:                 <span class="ruby-value str">&quot;pull_last_remote&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">pull_last_remote</span>]
+156:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000009" class="method-detail">
+        <a name="M000009"></a>
+
+        <div class="method-heading">
+          <a href="#M000009" class="method-signature">
+          <span class="method-name">get_sync_data_file</span><span class="method-args">(local_path)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Returns the path to the file used for storing sync data. Note taht this
+path should be a directory, not a file
+</p>
+<table>
+<tr><td valign="top">local_path:</td><td>Path to the directory for storing the sync data
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000009-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000009-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 439</span>
+439:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_sync_data_file</span>(<span class="ruby-identifier">local_path</span>)
+440: 
+441:     <span class="ruby-comment cmt"># location of our sync data</span>
+442:     <span class="ruby-identifier">sync_data_path</span> = <span class="ruby-identifier">local_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-constant">SYNC_DATA_FILE</span>
+443: 
+444:     <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">sync_data_path</span>
+445:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000010" class="method-detail">
+        <a name="M000010"></a>
+
+        <div class="method-heading">
+          <a href="#M000010" class="method-signature">
+          <span class="method-name">load_sync_data</span><span class="method-args">(local_path)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Loads in our sync data from the provided path and returns that data as a
+Hash. Note that this path should be a directory, not a file.
+</p>
+<table>
+<tr><td valign="top">local_path:</td><td>Path to directory containing sync data
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000010-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000010-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 452</span>
+452:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load_sync_data</span>(<span class="ruby-identifier">local_path</span>)
+453: 
+454:     <span class="ruby-comment cmt"># check to see if we have sync data</span>
+455:     <span class="ruby-keyword kw">if</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">exists?</span>(<span class="ruby-identifier">get_sync_data_file</span>(<span class="ruby-identifier">local_path</span>))
+456: 
+457:       <span class="ruby-comment cmt"># load in our sync data</span>
+458:       <span class="ruby-identifier">sync_data</span> = <span class="ruby-constant">YAML</span><span class="ruby-operator">::</span><span class="ruby-identifier">load_file</span>(<span class="ruby-identifier">get_sync_data_file</span>(<span class="ruby-identifier">local_path</span>))
+459:     <span class="ruby-keyword kw">else</span>
+460: 
+461:       <span class="ruby-comment cmt"># start with new sync data</span>
+462:       <span class="ruby-identifier">sync_data</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+463:       <span class="ruby-identifier">sync_data</span>[<span class="ruby-value str">&quot;push&quot;</span>] = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+464:       <span class="ruby-identifier">sync_data</span>[<span class="ruby-value str">&quot;pull&quot;</span>] = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
+465:     <span class="ruby-keyword kw">end</span>
+466: 
+467:     <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">sync_data</span>
+468:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000012" class="method-detail">
+        <a name="M000012"></a>
+
+        <div class="method-heading">
+          <a href="#M000012" class="method-signature">
+          <span class="method-name">pull</span><span class="method-args">(remote_path, local_path, delete)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Synchronizes the remote and local locations by downloading files from the
+remote location that are not present or are newer than those files in the
+local location. If delete_local is set to true, files that are present in
+the local location but not the remote location are deleted.
+</p>
+<table>
+<tr><td valign="top">remote_path:</td><td>The path to the remote location
+
+</td></tr>
+<tr><td valign="top">local_path:</td><td>The path to the local location
+
+</td></tr>
+<tr><td valign="top">delete:</td><td>Flag to indicate if local files should be removed
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000012-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000012-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 493</span>
+493:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">pull</span>(<span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">delete</span>)
+494: 
+495:     <span class="ruby-comment cmt"># load our sync data</span>
+496:     <span class="ruby-identifier">sync_data</span> = <span class="ruby-identifier">load_sync_data</span>(<span class="ruby-identifier">local_path</span>)
+497: 
+498:     <span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">SFTP</span>.<span class="ruby-identifier">start</span>(<span class="ruby-ivar">@remote_host</span>,
+499:                   <span class="ruby-ivar">@remote_username</span>,
+500:                   <span class="ruby-identifier">:password</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@remote_password</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">sftp</span><span class="ruby-operator">|</span>
+501: 
+502:       <span class="ruby-identifier">pull_dir</span>(<span class="ruby-identifier">sftp</span>, <span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">delete</span>, <span class="ruby-identifier">sync_data</span>)
+503:     <span class="ruby-keyword kw">end</span>
+504: 
+505:     <span class="ruby-comment cmt"># save our sync data</span>
+506:     <span class="ruby-identifier">save_sync_data</span>(<span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">sync_data</span>)
+507:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000008" class="method-detail">
+        <a name="M000008"></a>
+
+        <div class="method-heading">
+          <a href="#M000008" class="method-signature">
+          <span class="method-name">pull_dir</span><span class="method-args">(sftp_session, remote_path, local_path, delete, sync_data)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Downloads all of the changed (or not present) files and directories from
+the remote path to the local path. If the &quot;delete&quot; flag is set,
+files in the local location that are not present in the remote location
+will be removed.
+</p>
+<table>
+<tr><td valign="top">sftp_session:</td><td>The sftp_session used to download files
+
+</td></tr>
+<tr><td valign="top">remote_path:</td><td>The remote path to download files from
+
+</td></tr>
+<tr><td valign="top">local_path:</td><td>The destination of the downloaded files
+
+</td></tr>
+<tr><td valign="top">sync_data:</td><td>Hash used to track modification time of pulled files
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000008-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000008-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 362</span>
+362:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">pull_dir</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">delete</span>, <span class="ruby-identifier">sync_data</span>)
+363: 
+364:     <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">debug</span>(<span class="ruby-node">&quot;Pulling dir #{remote_path}&quot;</span>)
+365:     
+366:     <span class="ruby-comment cmt"># make sure the local path exists</span>
+367:     <span class="ruby-keyword kw">if</span> <span class="ruby-operator">!</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">exists?</span>(<span class="ruby-identifier">local_path</span>)
+368: 
+369:       <span class="ruby-constant">File</span>.<span class="ruby-identifier">makedirs</span>(<span class="ruby-identifier">local_path</span>)
+370:     <span class="ruby-keyword kw">end</span>
+371:     
+372:     <span class="ruby-comment cmt"># move our local file pointer to the local path</span>
+373:     <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">cd</span>(<span class="ruby-identifier">local_path</span>)
+374: 
+375:     <span class="ruby-comment cmt"># get a list of local files</span>
+376:     <span class="ruby-identifier">local_entries</span> = <span class="ruby-constant">Dir</span>.<span class="ruby-identifier">glob</span>(<span class="ruby-value str">&quot;*&quot;</span>)
+377: 
+378:     <span class="ruby-comment cmt"># list of items in this directory that we have handled</span>
+379:     <span class="ruby-identifier">handled_local_entry_paths</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+380: 
+381:     <span class="ruby-comment cmt"># enumerate the remote directory</span>
+382:     <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">dir</span>.<span class="ruby-identifier">foreach</span>(<span class="ruby-identifier">remote_path</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">remote_entry</span><span class="ruby-operator">|</span>
+383: 
+384:       <span class="ruby-comment cmt"># don't sync the link to the local or parent directory or our</span>
+385:       <span class="ruby-comment cmt"># sync data</span>
+386:       <span class="ruby-keyword kw">if</span>(<span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">!=</span> <span class="ruby-value str">&quot;.&quot;</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">!=</span> <span class="ruby-value str">&quot;..&quot;</span> <span class="ruby-operator">&amp;&amp;</span>
+387:          <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">!=</span> <span class="ruby-constant">SYNC_DATA_FILE</span>)
+388: 
+389:         <span class="ruby-comment cmt"># compute the local path and remote paths</span>
+390:         <span class="ruby-identifier">local_entry_path</span> = <span class="ruby-identifier">local_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span>
+391:         <span class="ruby-identifier">remote_entry_path</span> = <span class="ruby-identifier">remote_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span>
+392: 
+393:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">directory?</span>
+394: 
+395:           <span class="ruby-identifier">pull_dir</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_entry_path</span>, <span class="ruby-identifier">local_entry_path</span>, <span class="ruby-identifier">delete</span>,
+396:                    <span class="ruby-identifier">sync_data</span>)
+397:         <span class="ruby-keyword kw">else</span>
+398: 
+399:           <span class="ruby-identifier">pull_file</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_entry_path</span>, <span class="ruby-identifier">local_entry_path</span>,
+400:                     <span class="ruby-identifier">sync_data</span>)
+401:         <span class="ruby-keyword kw">end</span>
+402: 
+403:         <span class="ruby-comment cmt"># add the local path to our list of handled paths</span>
+404:         <span class="ruby-identifier">handled_local_entry_paths</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">local_entry_path</span>
+405:       <span class="ruby-keyword kw">end</span>
+406:     <span class="ruby-keyword kw">end</span>
+407: 
+408:     <span class="ruby-comment cmt"># handle deletion of stale local files and directories</span>
+409:     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">delete</span>
+410: 
+411:       <span class="ruby-comment cmt"># loop through the local entries</span>
+412:       <span class="ruby-identifier">local_entries</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">local_entry</span><span class="ruby-operator">|</span>
+413: 
+414:         <span class="ruby-comment cmt"># compute the local path</span>
+415:         <span class="ruby-identifier">local_entry_path</span> = <span class="ruby-identifier">local_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">local_entry</span>
+416: 
+417:         <span class="ruby-comment cmt"># check to see if we have handled this path</span>
+418:         <span class="ruby-keyword kw">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">handled_local_entry_paths</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">local_entry_path</span>)
+419: 
+420:           <span class="ruby-comment cmt"># this entry wasn't on the remote side, delete it</span>
+421:           <span class="ruby-keyword kw">if</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">directory?</span>(<span class="ruby-identifier">local_entry_path</span>)
+422: 
+423:             <span class="ruby-identifier">remove_dir</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-keyword kw">nil</span>, <span class="ruby-identifier">local_entry_path</span>)
+424:           <span class="ruby-keyword kw">else</span>
+425: 
+426:             <span class="ruby-identifier">remove_file</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-keyword kw">nil</span>, <span class="ruby-identifier">local_entry_path</span>)
+427:           <span class="ruby-keyword kw">end</span>
+428:         <span class="ruby-keyword kw">end</span>
+429:       <span class="ruby-keyword kw">end</span>
+430:     <span class="ruby-keyword kw">end</span>
+431: 
+432:     <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">debug</span>(<span class="ruby-node">&quot;Pulled dir #{remote_path}&quot;</span>)
+433:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000006" class="method-detail">
+        <a name="M000006"></a>
+
+        <div class="method-heading">
+          <a href="#M000006" class="method-signature">
+          <span class="method-name">pull_file</span><span class="method-args">(sftp_session, remote_path, local_path, sync_data)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Downloads the file from the remote path to the provided local path if the
+file has changed or is not present..
+</p>
+<table>
+<tr><td valign="top">sftp_session:</td><td>The sftp_session used to download the file
+
+</td></tr>
+<tr><td valign="top">remote_path:</td><td>The location of the file to download
+
+</td></tr>
+<tr><td valign="top">local_path:</td><td>The destination of the downloaded file
+
+</td></tr>
+<tr><td valign="top">sync_data:</td><td>Hash used to track the modification time of pulled files
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000006-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000006-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 220</span>
+220:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">pull_file</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">sync_data</span>)
+221: 
+222:     <span class="ruby-comment cmt"># get the remote modification time</span>
+223:     <span class="ruby-identifier">remote_mtime</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">at</span>(<span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">file</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">remote_path</span>).<span class="ruby-identifier">stat</span>().<span class="ruby-identifier">mtime</span>)
+224: 
+225:     <span class="ruby-comment cmt"># get the local modification time</span>
+226:     <span class="ruby-keyword kw">if</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">exists?</span>(<span class="ruby-identifier">local_path</span>)
+227: 
+228:       <span class="ruby-identifier">local_mtime</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">mtime</span>(<span class="ruby-identifier">local_path</span>)
+229:     <span class="ruby-keyword kw">else</span>
+230: 
+231:       <span class="ruby-identifier">local_mtime</span> = <span class="ruby-keyword kw">nil</span>
+232:     <span class="ruby-keyword kw">end</span>
+233: 
+234:     <span class="ruby-comment cmt"># get our last sync times</span>
+235:     <span class="ruby-identifier">last_sync</span> = <span class="ruby-identifier">get_last_sync_times</span>(<span class="ruby-identifier">sync_data</span>, <span class="ruby-identifier">remote_path</span>)
+236: 
+237:     <span class="ruby-keyword kw">if</span>(<span class="ruby-comment cmt"># pull if the file isn't present on the local side</span>
+238:        <span class="ruby-operator">!</span><span class="ruby-identifier">local_mtime</span> <span class="ruby-operator">||</span>
+239: 
+240:        <span class="ruby-comment cmt"># pull the file if the local file is older than our last push</span>
+241:        (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;push_last_local&quot;</span>] <span class="ruby-operator">&amp;&amp;</span>
+242:         (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;push_last_local&quot;</span>] <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">local_mtime</span>) <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>) <span class="ruby-operator">||</span>
+243: 
+244:        <span class="ruby-comment cmt"># pull the file it's newer than the last pull</span>
+245:        (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;pull_last_remote&quot;</span>] <span class="ruby-operator">&amp;&amp;</span>
+246:         (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;pull_last_remote&quot;</span>] <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">remote_mtime</span>) <span class="ruby-operator">&lt;</span> <span class="ruby-value">0</span>) <span class="ruby-operator">||</span>
+247: 
+248:        <span class="ruby-comment cmt"># if we haven't pulled this file and the file is newer than the</span>
+249:        <span class="ruby-comment cmt"># last push</span>
+250:        (<span class="ruby-operator">!</span><span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;pull_last_local&quot;</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;push_last_local&quot;</span>] <span class="ruby-operator">&amp;&amp;</span>
+251:         (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;push_last_local&quot;</span>] <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">local_mtime</span>) <span class="ruby-operator">&lt;</span> <span class="ruby-value">0</span>))
+252: 
+253:       <span class="ruby-comment cmt"># pull the file</span>
+254:       <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">download!</span>(<span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>)
+255:       <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">debug</span>(<span class="ruby-node">&quot;Pulled file #{remote_path}&quot;</span>)
+256: 
+257:       <span class="ruby-comment cmt"># get the new modification time of the remote file</span>
+258:       <span class="ruby-identifier">local_mtime</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">mtime</span>(<span class="ruby-identifier">local_path</span>)
+259:       
+260:       <span class="ruby-comment cmt"># save the modification time of the remote file</span>
+261:       <span class="ruby-identifier">sync_data</span>[<span class="ruby-value str">&quot;pull&quot;</span>][<span class="ruby-identifier">remote_path</span>] = [<span class="ruby-identifier">local_mtime</span>, <span class="ruby-identifier">remote_mtime</span>]
+262:     <span class="ruby-keyword kw">else</span>
+263: 
+264:       <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">debug</span>(<span class="ruby-node">&quot;Skipped file #{remote_path}&quot;</span>)
+265:     <span class="ruby-keyword kw">end</span>
+266:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000013" class="method-detail">
+        <a name="M000013"></a>
+
+        <div class="method-heading">
+          <a href="#M000013" class="method-signature">
+          <span class="method-name">push</span><span class="method-args">(remote_path, local_path, delete)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Synchronizes the remote and local locations by uploading files from the
+local location that are not present or are newer than those files in the
+remote location. If delete_remote is set to true, files that are present in
+the remote location but are not present in the local location are deleted.
+</p>
+<table>
+<tr><td valign="top">remote_path:</td><td>The path to the remote location
+
+</td></tr>
+<tr><td valign="top">local_path:</td><td>The path to the local location
+
+</td></tr>
+<tr><td valign="top">delete:</td><td>Flag to indicate remote files should be removed
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000013-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000013-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 518</span>
+518:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">push</span>(<span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">delete</span>)
+519: 
+520:     <span class="ruby-comment cmt"># load our sync data</span>
+521:     <span class="ruby-identifier">sync_data</span> = <span class="ruby-identifier">load_sync_data</span>(<span class="ruby-identifier">local_path</span>)
+522:     
+523:     <span class="ruby-constant">Net</span><span class="ruby-operator">::</span><span class="ruby-constant">SFTP</span>.<span class="ruby-identifier">start</span>(<span class="ruby-ivar">@remote_host</span>,
+524:                   <span class="ruby-ivar">@remote_username</span>,
+525:                   <span class="ruby-identifier">:password</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@remote_password</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">sftp</span><span class="ruby-operator">|</span>
+526: 
+527:       <span class="ruby-identifier">push_dir</span>(<span class="ruby-identifier">sftp</span>, <span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">delete</span>, <span class="ruby-identifier">sync_data</span>)
+528:     <span class="ruby-keyword kw">end</span>
+529: 
+530:     <span class="ruby-comment cmt"># save our sync data</span>
+531:     <span class="ruby-identifier">save_sync_data</span>(<span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">sync_data</span>)
+532:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000007" class="method-detail">
+        <a name="M000007"></a>
+
+        <div class="method-heading">
+          <a href="#M000007" class="method-signature">
+          <span class="method-name">push_dir</span><span class="method-args">(sftp_session, remote_path, local_path, delete, sync_data)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Uploads all of the changed (or not present) files and directories from the
+local path to the remote path. If the &quot;delete&quot; flag is set, files
+in the remote location that are not present in the local location will be
+removed.
+</p>
+<table>
+<tr><td valign="top">sftp_session:</td><td>The sftp_session used to upload the files
+
+</td></tr>
+<tr><td valign="top">remote_path:</td><td>The remote path for the uploaded files
+
+</td></tr>
+<tr><td valign="top">local_path:</td><td>The local path of files to upload
+
+</td></tr>
+<tr><td valign="top">sync_data:</td><td>Hash used to track modification time of pushed files
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000007-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000007-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 277</span>
+277:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">push_dir</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">delete</span>, <span class="ruby-identifier">sync_data</span>)
+278: 
+279:     <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">debug</span>(<span class="ruby-node">&quot;Pushing dir #{local_path}&quot;</span>)
+280:     
+281:     <span class="ruby-comment cmt"># make sure the remote path exists</span>
+282:     <span class="ruby-keyword kw">begin</span>
+283: 
+284:       <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">dir</span>.<span class="ruby-identifier">entries</span>(<span class="ruby-identifier">remote_path</span>)
+285:     <span class="ruby-keyword kw">rescue</span>
+286: 
+287:       <span class="ruby-comment cmt"># we block on the directory creation because we'll need it as</span>
+288:       <span class="ruby-comment cmt"># soon as this call returns</span>
+289:       <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">mkdir!</span>(<span class="ruby-identifier">remote_path</span>)
+290:     <span class="ruby-keyword kw">end</span>
+291: 
+292:     <span class="ruby-comment cmt"># move our local file pointer to the local path</span>
+293:     <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">cd</span>(<span class="ruby-identifier">local_path</span>)
+294: 
+295:     <span class="ruby-comment cmt"># get a list of our remote files</span>
+296:     <span class="ruby-identifier">remote_entries</span> = <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">dir</span>.<span class="ruby-identifier">glob</span>(<span class="ruby-identifier">remote_path</span>, <span class="ruby-value str">&quot;*&quot;</span>)
+297: 
+298:     <span class="ruby-comment cmt"># a list of items in this directory that we have handled</span>
+299:     <span class="ruby-identifier">handled_remote_entry_paths</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+300: 
+301:     <span class="ruby-comment cmt"># enumerate the local directory</span>
+302:     <span class="ruby-constant">Dir</span>.<span class="ruby-identifier">glob</span>(<span class="ruby-value str">&quot;*&quot;</span>).<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">local_entry</span><span class="ruby-operator">|</span>
+303: 
+304:       <span class="ruby-comment cmt"># don't sync the link to the local or parent directory</span>
+305:       <span class="ruby-keyword kw">if</span>(<span class="ruby-identifier">local_entry</span> <span class="ruby-operator">!=</span> <span class="ruby-value str">&quot;.&quot;</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">local_entry</span> <span class="ruby-operator">!=</span> <span class="ruby-value str">&quot;..&quot;</span>)
+306: 
+307:         <span class="ruby-comment cmt"># compute the local and remote paths</span>
+308:         <span class="ruby-identifier">local_entry_path</span> = <span class="ruby-identifier">local_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">local_entry</span>
+309:         <span class="ruby-identifier">remote_entry_path</span> = <span class="ruby-identifier">remote_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">local_entry</span>
+310: 
+311:         <span class="ruby-keyword kw">if</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">directory?</span>(<span class="ruby-identifier">local_entry_path</span>)
+312: 
+313:           <span class="ruby-identifier">push_dir</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_entry_path</span>, <span class="ruby-identifier">local_entry_path</span>, <span class="ruby-identifier">delete</span>,
+314:                    <span class="ruby-identifier">sync_data</span>)
+315:         <span class="ruby-keyword kw">else</span>
+316: 
+317:           <span class="ruby-identifier">push_file</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_entry_path</span>, <span class="ruby-identifier">local_entry_path</span>,
+318:                     <span class="ruby-identifier">sync_data</span>)
+319:         <span class="ruby-keyword kw">end</span>
+320: 
+321:         <span class="ruby-comment cmt"># add the remote path to our list of handled paths</span>
+322:         <span class="ruby-identifier">handled_remote_entry_paths</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">remote_entry_path</span>
+323:       <span class="ruby-keyword kw">end</span>
+324:     <span class="ruby-keyword kw">end</span>
+325: 
+326:     <span class="ruby-comment cmt"># handle the deletion of stale remote files and directories</span>
+327:     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">delete</span>
+328: 
+329:       <span class="ruby-comment cmt"># loop through the remote entries</span>
+330:       <span class="ruby-identifier">remote_entries</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">remote_entry</span><span class="ruby-operator">|</span>
+331: 
+332:         <span class="ruby-comment cmt"># compute the remote path</span>
+333:         <span class="ruby-identifier">remote_entry_path</span> = <span class="ruby-identifier">remote_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span>
+334: 
+335:         <span class="ruby-comment cmt"># check to see if we have handled this path</span>
+336:         <span class="ruby-keyword kw">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">handled_remote_entry_paths</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">remote_entry_path</span>)
+337: 
+338:           <span class="ruby-comment cmt"># this entry wasn't on the local side, delete it</span>
+339:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">directory?</span>
+340: 
+341:             <span class="ruby-identifier">remove_dir</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_entry_path</span>, <span class="ruby-keyword kw">nil</span>)
+342:           <span class="ruby-keyword kw">else</span>
+343: 
+344:             <span class="ruby-identifier">remove_file</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_entry_path</span>, <span class="ruby-keyword kw">nil</span>)
+345:           <span class="ruby-keyword kw">end</span>
+346:         <span class="ruby-keyword kw">end</span>
+347:       <span class="ruby-keyword kw">end</span>
+348:     <span class="ruby-keyword kw">end</span>
+349: 
+350:     <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">debug</span>(<span class="ruby-node">&quot;Pushed dir #{local_path}&quot;</span>)
+351:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000005" class="method-detail">
+        <a name="M000005"></a>
+
+        <div class="method-heading">
+          <a href="#M000005" class="method-signature">
+          <span class="method-name">push_file</span><span class="method-args">(sftp_session, remote_path, local_path, sync_data)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Uploades the file from the local path to the remote path if the file has
+changed or is not present.
+</p>
+<table>
+<tr><td valign="top">sftp_session:</td><td>The sftp_session used to upload the file
+
+</td></tr>
+<tr><td valign="top">remote_path:</td><td>The destination of the uploaded file
+
+</td></tr>
+<tr><td valign="top">local_path:</td><td>The location of the file to upload
+
+</td></tr>
+<tr><td valign="top">sync_data:</td><td>Hash used to track the modification time of pushed files
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000005-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000005-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 165</span>
+165:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">push_file</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">sync_data</span>)
+166: 
+167:     <span class="ruby-comment cmt"># get the modification time of the local file</span>
+168:     <span class="ruby-identifier">local_mtime</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">mtime</span>(<span class="ruby-identifier">local_path</span>)
+169: 
+170:     <span class="ruby-comment cmt"># get the remote modification time</span>
+171:     <span class="ruby-keyword kw">begin</span>
+172: 
+173:       <span class="ruby-identifier">remote_mtime</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">at</span>(<span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">file</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">remote_path</span>).<span class="ruby-identifier">stat</span>().<span class="ruby-identifier">mtime</span>)
+174:     <span class="ruby-keyword kw">rescue</span>
+175: 
+176:       <span class="ruby-identifier">remote_mtime</span> = <span class="ruby-keyword kw">nil</span>
+177:     <span class="ruby-keyword kw">end</span>
+178: 
+179:     <span class="ruby-comment cmt"># get our last sync times</span>
+180:     <span class="ruby-identifier">last_sync</span> = <span class="ruby-identifier">get_last_sync_times</span>(<span class="ruby-identifier">sync_data</span>, <span class="ruby-identifier">remote_path</span>)
+181: 
+182:     <span class="ruby-keyword kw">if</span>(<span class="ruby-comment cmt"># push if the file isn't present on the remote side</span>
+183:        <span class="ruby-operator">!</span><span class="ruby-identifier">remote_mtime</span> <span class="ruby-operator">||</span>
+184:         
+185:        <span class="ruby-comment cmt"># push the file if the remote file is older than our last pull</span>
+186:        (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;pull_last_remote&quot;</span>] <span class="ruby-operator">&amp;&amp;</span>
+187:         (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;pull_last_remote&quot;</span>] <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">remote_mtime</span>) <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>) <span class="ruby-operator">||</span>
+188:        
+189:        <span class="ruby-comment cmt"># push the file if it's newer that the last push</span>
+190:        (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;push_last_local&quot;</span>] <span class="ruby-operator">&amp;&amp;</span>
+191:         (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;push_last_local&quot;</span>] <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">local_mtime</span>) <span class="ruby-operator">&lt;</span> <span class="ruby-value">0</span>) <span class="ruby-operator">||</span>
+192: 
+193:        <span class="ruby-comment cmt"># if we haven't pushed this file and the file is newer than the</span>
+194:        <span class="ruby-comment cmt"># the last pull</span>
+195:        (<span class="ruby-operator">!</span><span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;push_last_local&quot;</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;pull_last_local&quot;</span>] <span class="ruby-operator">&amp;&amp;</span>
+196:         (<span class="ruby-identifier">last_sync</span>[<span class="ruby-value str">&quot;pull_last_local&quot;</span>] <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">local_mtime</span>) <span class="ruby-operator">&lt;</span> <span class="ruby-value">0</span>))
+197: 
+198:       <span class="ruby-comment cmt"># push the file</span>
+199:       <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">upload!</span>(<span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">remote_path</span>)
+200:       <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">debug</span>(<span class="ruby-node">&quot;Pushed file #{local_path}&quot;</span>)
+201:       
+202:       <span class="ruby-comment cmt"># get the new modification time of the remote file</span>
+203:       <span class="ruby-identifier">remote_mtime</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">at</span>(<span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">file</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">remote_path</span>).<span class="ruby-identifier">stat</span>().<span class="ruby-identifier">mtime</span>)
+204:       
+205:       <span class="ruby-comment cmt"># save the modification time of the local file</span>
+206:       <span class="ruby-identifier">sync_data</span>[<span class="ruby-value str">&quot;push&quot;</span>][<span class="ruby-identifier">remote_path</span>] = [<span class="ruby-identifier">local_mtime</span>, <span class="ruby-identifier">remote_mtime</span>]
+207:     <span class="ruby-keyword kw">else</span>
+208: 
+209:       <span class="ruby-ivar">@log</span>.<span class="ruby-identifier">debug</span>(<span class="ruby-node">&quot;Skipped file #{local_path}&quot;</span>)
+210:     <span class="ruby-keyword kw">end</span>
+211:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000002" class="method-detail">
+        <a name="M000002"></a>
+
+        <div class="method-heading">
+          <a href="#M000002" class="method-signature">
+          <span class="method-name">remove_dir</span><span class="method-args">(sftp_session, remote_path, local_path)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Removes the directory and all of child files associated with it. Note that
+you do not need to always be deleting both a remote and a local path, you
+can do either one or both.
+</p>
+<table>
+<tr><td valign="top">sftp_session:</td><td>The sftp_session used to remove remote directories
+
+</td></tr>
+<tr><td valign="top">remote_path:</td><td>The remote path to remove
+
+</td></tr>
+<tr><td valign="top">local_path:</td><td>The local path to remove
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000002-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000002-source">
+<pre>
+    <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 64</span>
+64:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">remove_dir</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>)
+65: 
+66:     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">local_path</span>
+67: 
+68:       <span class="ruby-comment cmt"># remove the local directory</span>
+69:       <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">remove_dir</span>(<span class="ruby-identifier">local_path</span>)
+70:     <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">remote_path</span>
+71: 
+72:       <span class="ruby-comment cmt"># remove all of the files in the remote location</span>
+73:       <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">dir</span>.<span class="ruby-identifier">foreach</span>(<span class="ruby-identifier">remote_path</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">remote_entry</span><span class="ruby-operator">|</span>
+74: 
+75:         <span class="ruby-comment cmt"># don't remove the links to the current or parent directory</span>
+76:         <span class="ruby-keyword kw">if</span>(<span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">!=</span> <span class="ruby-value str">&quot;.&quot;</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">!=</span> <span class="ruby-value str">&quot;..&quot;</span>)
+77: 
+78:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">directory?</span>
+79: 
+80:             <span class="ruby-identifier">remove_dir</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span>, <span class="ruby-keyword kw">nil</span>)
+81:           <span class="ruby-keyword kw">else</span>
+82: 
+83:             <span class="ruby-identifier">remove_file</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_path</span> <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;/&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">remote_entry</span>.<span class="ruby-identifier">name</span>,
+84:                         <span class="ruby-keyword kw">nil</span>)
+85:           <span class="ruby-keyword kw">end</span>
+86:         <span class="ruby-keyword kw">end</span>
+87:       <span class="ruby-keyword kw">end</span>
+88:       
+89:       <span class="ruby-comment cmt"># remove the remote directory, we block in case this is a</span>
+90:       <span class="ruby-comment cmt"># recursive call and the parent directory is going to be deleted</span>
+91:       <span class="ruby-comment cmt"># when this call returns</span>
+92:       <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">rmdir!</span>(<span class="ruby-identifier">remote_path</span>)
+93:     <span class="ruby-keyword kw">end</span>
+94:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000003" class="method-detail">
+        <a name="M000003"></a>
+
+        <div class="method-heading">
+          <a href="#M000003" class="method-signature">
+          <span class="method-name">remove_file</span><span class="method-args">(sftp_session, remote_path, local_path)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Removes the file. Note that you do not need to always be deleting both a
+remote and a local path, you can do either one or both.
+</p>
+<table>
+<tr><td valign="top">sftp_session:</td><td>The sftp_session used to remove remote files
+
+</td></tr>
+<tr><td valign="top">remote_path:</td><td>The remote path to remove
+
+</td></tr>
+<tr><td valign="top">local_path:</td><td>The local path to remove
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000003-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000003-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 102</span>
+102:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">remove_file</span>(<span class="ruby-identifier">sftp_session</span>, <span class="ruby-identifier">remote_path</span>, <span class="ruby-identifier">local_path</span>)
+103: 
+104:     <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">local_path</span>
+105: 
+106:       <span class="ruby-comment cmt"># remove the local file</span>
+107:       <span class="ruby-constant">FilUtils</span>.<span class="ruby-identifier">remove</span>(<span class="ruby-identifier">local_path</span>)
+108:     <span class="ruby-keyword kw">elsif</span> <span class="ruby-identifier">remote_path</span>
+109: 
+110:       <span class="ruby-comment cmt"># remote the remote file, we need to block on this in case the</span>
+111:       <span class="ruby-comment cmt"># parent directory is removed next.</span>
+112:       <span class="ruby-identifier">sftp_session</span>.<span class="ruby-identifier">remove!</span>(<span class="ruby-identifier">remote_path</span>)
+113:     <span class="ruby-keyword kw">end</span>
+114:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000011" class="method-detail">
+        <a name="M000011"></a>
+
+        <div class="method-heading">
+          <a href="#M000011" class="method-signature">
+          <span class="method-name">save_sync_data</span><span class="method-args">(local_path, sync_data)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Saves our sync data to the provided path. Note that this path should be a
+directory, not a file.
+</p>
+<table>
+<tr><td valign="top">local_path:</td><td>Path to the directory where sync data will be stored
+
+</td></tr>
+<tr><td valign="top">sync_data:</td><td>The sync data to save
+
+</td></tr>
+</table>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000011-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000011-source">
+<pre>
+     <span class="ruby-comment cmt"># File vendor/plugins/sftp_sync_plugin/lib/sftp_sync.rb, line 475</span>
+475:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">save_sync_data</span>(<span class="ruby-identifier">local_path</span>, <span class="ruby-identifier">sync_data</span>)
+476: 
+477:     <span class="ruby-comment cmt"># save our sync data</span>
+478:     <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">get_sync_data_file</span>(<span class="ruby-identifier">local_path</span>), <span class="ruby-value str">'w'</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">out</span><span class="ruby-operator">|</span>
+479: 
+480:       <span class="ruby-constant">YAML</span><span class="ruby-operator">::</span><span class="ruby-identifier">dump</span>(<span class="ruby-identifier">sync_data</span>, <span class="ruby-identifier">out</span>)
+481:     <span class="ruby-keyword kw">end</span>
+482:   <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>
