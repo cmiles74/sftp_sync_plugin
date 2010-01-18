@@ -2,6 +2,12 @@
 # Provides an object for synchronizing a local directory with a remote
 # SFTP location.
 #
+# Author:: Christopher M. Miles
+#
+# Nervestaple Development
+#
+# version 1.0, 1/17/2010
+#
 class SftpSync
 
   require 'rubygems' # only for testing outside of rails
@@ -12,10 +18,20 @@ class SftpSync
   require 'log4r'
   include Log4r
 
-  # Attributes for holding our connection and syncing information
+  # the local directory to sync
   attr_accessor :local_directory
-  attr_accessor :remote_host, :remote_directory
-  attr_accessor :remote_username, :remote_password
+
+  # the remote host
+  attr_accessor :remote_host
+
+  # the username for the remote host
+  attr_accessor :remote_username
+
+  # the password for the remote host
+  attr_accessor :remote_password
+  
+  # the remote directory to sync
+  attr_accessor :remote_directory
 
   # the name of the file where we store our sync data
   SYNC_DATA_FILE = ".sftp_sync_data.yaml"
@@ -100,10 +116,10 @@ class SftpSync
   # Returns a Hash with the last push and pull times for the provided
   # path. This Hash will have the following keys...
   #
-  # - push_last_local mtime of the local file after the last push
-  # - push_last_remote mtime of the remote file after the last push
-  # - pull_last_local mtime of the local files after the last pull
-  # - pull_last_remote mtime of the remote file after the last pull
+  # push_last_local::  mtime of the local file after the last push
+  # push_last_remote::  mtime of the remote file after the last push
+  # pull_last_local:: mtime of the local files after the last pull
+  # pull_last_remote:: mtime of the remote file after the last pull
   #
   # sync_data:: The Hash of sync data from which times will be fetched
   # remote_path:: The path for which to fetch times
@@ -139,7 +155,8 @@ class SftpSync
                 "pull_last_remote" => pull_last_remote]
   end
   
-  # Uploades the file from the local path to the remote path.
+  # Uploades the file from the local path to the remote path if the
+  # file has changed or is not present.
   #
   # sftp_session:: The sftp_session used to upload the file
   # remote_path:: The destination of the uploaded file
@@ -161,14 +178,27 @@ class SftpSync
 
     # get our last sync times
     last_sync = get_last_sync_times(sync_data, remote_path)
-    
-    if !remote_mtime || !last_sync["push_last_remote"] ||
-        (last_sync["push_last_remote"] <=> remote_mtime) < 0
+
+    if(# push if the file isn't present on the remote side
+       !remote_mtime ||
+        
+       # push the file if the remote file is older than our last pull
+       (last_sync["pull_last_remote"] &&
+        (last_sync["pull_last_remote"] <=> remote_mtime) > 0) ||
+       
+       # push the file if it's newer that the last push
+       (last_sync["push_last_local"] &&
+        (last_sync["push_last_local"] <=> local_mtime) < 0) ||
+
+       # if we haven't pushed this file and the file is newer than the
+       # the last pull
+       (!last_sync["push_last_local"] && last_sync["pull_last_local"] &&
+        (last_sync["pull_last_local"] <=> local_mtime) < 0))
 
       # push the file
       sftp_session.upload!(local_path, remote_path)
       @log.debug("Pushed file #{local_path}")
-
+      
       # get the new modification time of the remote file
       remote_mtime = Time.at(sftp_session.file.open(remote_path).stat().mtime)
       
@@ -181,7 +211,7 @@ class SftpSync
   end
 
   # Downloads the file from the remote path to the provided local
-  # path.
+  # path if the file has changed or is not present..
   #
   # sftp_session:: The sftp_session used to download the file
   # remote_path:: The location of the file to download
@@ -204,8 +234,21 @@ class SftpSync
     # get our last sync times
     last_sync = get_last_sync_times(sync_data, remote_path)
 
-    if !local_mtime || !last_sync["pull_last_remote"] ||
-        (last_sync["pull_last_remote"] <=> remote_mtime) < 0
+    if(# pull if the file isn't present on the local side
+       !local_mtime ||
+
+       # pull the file if the local file is older than our last push
+       (last_sync["push_last_local"] &&
+        (last_sync["push_last_local"] <=> local_mtime) > 0) ||
+
+       # pull the file it's newer than the last pull
+       (last_sync["pull_last_remote"] &&
+        (last_sync["pull_last_remote"] <=> remote_mtime) < 0) ||
+
+       # if we haven't pulled this file and the file is newer than the
+       # last push
+       (!last_sync["pull_last_local"] && last_sync["push_last_local"] &&
+        (last_sync["push_last_local"] <=> local_mtime) < 0))
 
       # pull the file
       sftp_session.download!(remote_path, local_path)
@@ -222,14 +265,13 @@ class SftpSync
     end
   end
 
-  # Uploads all of the files and directories from the local path to
-  # the remote path. If the "delete" flag is set, files in the remote
-  # location that are not present in the local location will be
-  # removed.
+  # Uploads all of the changed (or not present) files and directories
+  # from the local path to the remote path. If the "delete" flag is
+  # set, files in the remote location that are not present in the
+  # local location will be removed.
   #
   # sftp_session:: The sftp_session used to upload the files
-  # remote_path:: The remote path that will be the destination of the
-  # uploaded files
+  # remote_path:: The remote path for the uploaded files
   # local_path:: The local path of files to upload
   # sync_data:: Hash used to track modification time of pushed files
   def push_dir(sftp_session, remote_path, local_path, delete, sync_data)
@@ -308,10 +350,10 @@ class SftpSync
     @log.debug("Pushed dir #{local_path}")
   end
 
-  # Downloads all of the files and directories from the remote path to
-  # the local path. If the "delete" flag is set, files in the local
-  # location that are not present in the remote location will be
-  # removed.
+  # Downloads all of the changed (or not present) files and
+  # directories from the remote path to the local path. If the
+  # "delete" flag is set, files in the local location that are not
+  # present in the remote location will be removed.
   #
   # sftp_session:: The sftp_session used to download files
   # remote_path:: The remote path to download files from
@@ -393,8 +435,7 @@ class SftpSync
   # Returns the path to the file used for storing sync data. Note taht
   # this path should be a directory, not a file
   #
-  # local_path:: Path to the directory where sync data will be or has
-  # been stored.
+  # local_path:: Path to the directory for storing the sync data
   def get_sync_data_file(local_path)
 
     # location of our sync data
@@ -441,14 +482,14 @@ class SftpSync
   end
 
   # Synchronizes the remote and local locations by downloading files
-  # from the remote location that are not present in the local
-  # location. If delete_local is set to true, files that are present
-  # in the local location but not the remote location are deleted.
+  # from the remote location that are not present or are newer than
+  # those files in the local location. If delete_local is set to true,
+  # files that are present in the local location but not the remote
+  # location are deleted.
   #
   # remote_path:: The path to the remote location
   # local_path:: The path to the local location
-  # delete:: Flag to indicate if local files that are not
-  # present in the remote location should be deleted
+  # delete:: Flag to indicate if local files should be removed
   def pull(remote_path, local_path, delete)
 
     # load our sync data
@@ -466,15 +507,14 @@ class SftpSync
   end
 
   # Synchronizes the remote and local locations by uploading files
-  # from the local location that are not present in the remote
-  # location. If delete_remote is set to true, files that are present
-  # in the remote location but are not present in the local location
-  # are deleted.
+  # from the local location that are not present or are newer than
+  # those files in the remote location. If delete_remote is set to
+  # true, files that are present in the remote location but are not
+  # present in the local location are deleted.
   #
   # remote_path:: The path to the remote location
   # local_path:: The path to the local location
-  # delete:: Flag to indicate if remote files that are not present in
-  # the local location should be deleted
+  # delete:: Flag to indicate remote files should be removed
   def push(remote_path, local_path, delete)
 
     # load our sync data

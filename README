@@ -1,33 +1,53 @@
-SFTP Sync Plugin
-================
+= SFTP Sync Plugin
 
 This plugin provides a very simple mechanism for synchronizing a local
 folder with an SFTP location. It uses a very simple algorithm that
 compares modification dates.
 
-Dependencies
-============
+== Dependencies
 
 This plugin requires the Net::SFTP and the Net::SSH module. You can
 download a copy from the project's respective websites.
 
-  http://net-ssh.rubyforge.org/sftp/v2/api/
+    http://net-ssh.rubyforge.org/sftp/v2/api/
 
-  http://net-ssh.rubyforge.org/ssh/v2/api
+    http://net-ssh.rubyforge.org/ssh/v2/api
 
-This plugin was tested with version Net::SFTP 2.0.4 and Net::SSH 2.0.17
+This plugin was tested with version Net::SFTP 2.0.4 and Net::SSH 2.0.17.
 
-Example
-=======
+We also require ftools for managing files on the local side, YAML for
+storing the modification times of the files between runs, and Log4r
+for logging messages to the console.
 
-Example goes here.
+== Example
 
+First, create a new instance that can connect to the remote server.
 
-Contact
-=======
+    sync = SftpSync("somehost.somewhere.com",
+                    "username",
+                    "password")
+
+Next, pull the files from the remote location to your local machine.
+
+    sync.pull("remote_dir", "/home/local_dir", true)
+
+The last parameter is a boolean value that indicates to SftpSync that
+you want to delete files on the local side that are not present on the
+remote side.
+
+Later on you can push the files back up to the remote location. Any
+files that you edited will be uploaded.
+
+    sync.push("remote_dir", "/home/local_dir", true)
+
+The last parameter is a boolean value that indicates to SftpSync that
+you want to delete files on the remote side that are not present on
+the local side.
+
+== Contact
 
 If you have any questions or comments, please contact me directly.
 
-  Christopher Miles
-  twitch@nervestaple.com
+    Christopher Miles
+    twitch@nervestaple.com
 
