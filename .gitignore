@@ -5,6 +5,7 @@ syntax: glob
 *.o
 tests/*.err
 .DS_Store
+doc/*
 log/*
 tmp/*
 \#*
