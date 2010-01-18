@@ -19,6 +19,12 @@ We also require ftools for managing files on the local side, YAML for
 storing the modification times of the files between runs, and Log4r
 for logging messages to the console.
 
+== Installation
+
+You can add this plugin to your project with the following incantation:
+  
+    ./script/plugin install git://github.com/cmiles74/sftp_sync_plugin.git
+
 == Example
 
 First, create a new instance that can connect to the remote server.
